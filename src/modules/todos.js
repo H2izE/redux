@@ -1,5 +1,4 @@
-import { createAction, handleAction } from "redux-actions";
-import produce from 'immer';
+import { createAction, handleActions } from "redux-actions";
 
 const CHANGE_INPUT = "todos/CHANGE_INPUT";
 const INSERT = "todos/INSERT";
@@ -20,58 +19,17 @@ const initialState = {
     ]
 };
 
-const deepObject = {
-    modal: {
-        open: false,
-        content: {
-            title: '알림',
-            body: '성공',
-            buttons: {
-                confirm: '확인',
-                cancel: '취소',
-            },
-        },
-    },
-    waiting: false,
-    settings: {
-        theme: 'dark',
-        zoomLevel: 5,
-    },
-};
-
-
-const shallowObject = {
-    modal: {
-        open: false,
-        title: '알림',
-        body: '성공',
-        confirm: '확인',
-        cancel: '취소',
-    },
-    waiting: false,
-    theme: 'dark',
-    zoomLevel: 5
-}
-
-const todos = handleAction({
-    [CHANGE_INPUT]: (state, { payload: input }) =>
-        produce(state, draft => {
-            draft.input = input;
-        }),
-    [INSERT]: (state, { payload: todo }) =>
-        produce(state, draft => {
-            draft.todos.push(todo);
-        }),
-    [TOGGLE]: (state, { payload: id }) =>
-        produce(state, draft => {
-            const todo = draft.todos.find(todo => todo.id === id);
-            todo.done = !todo.done;
-        }),
-    [REMOVE]: (state, { payload: id }) =>
-        produce(state, draft => {
-            const index = draft.todos.findIndex(todo => todo.id === id);
-            draft.todos.splice(index, 1);
-        }),
-}, initialState)
+const todos = handleActions({
+    [CHANGE_INPUT]: (state, { payload: input }) => ({ ...state, input }),
+    [INSERT]: (state, { payload: todo }) => ({ ...state, todos: state.todos.concat(todo) }),
+    [TOGGLE]: (state, { payload: id }) => ({
+        ...state,
+        todos: state.todos.map((todo) => todo.id === id ? { ...todo, done: !todo.done } : todo)
+    }),
+    [REMOVE]: (state, { payload: id }) => ({
+        ...state,
+        todos: state.todos.filter((todo) => todo.id !== id)
+    })
+}, initialState);
 
 export default todos;
